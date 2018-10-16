@@ -67,5 +67,5 @@ class UbuntuNetSpeed(Gtk.Application):
         Gtk.main_quit()
 
 if __name__ == '__main__':
-    app = MyApp('ubuntu-netspeed')
+    app = UbuntuNetSpeed('ubuntu-netspeed')
     app.run()
