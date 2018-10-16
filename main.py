@@ -17,7 +17,7 @@ from Gtk_indicator import Appindicator
 from Gtk_indicator import AppConfigWindow
 from Gtk_indicator import AppMainWindow
 
-class MyApp(Gtk.Application):
+class UbuntuNetSpeed(Gtk.Application):
     def __init__(self, app_name):
         self.name = app_name
         self.main_window = AppMainWindow(self)
@@ -28,7 +28,7 @@ class MyApp(Gtk.Application):
     def run(self):
 
         #TO-DO: Provide support for dynamic interface change 
-        def calculate_network_speed(rate, indicator, dt=1, interface='enp3s0'):
+        def calculate_net_speed(rate, indicator, dt=1, interface='enp3s0'):
             t0 = time.time()
             counter = psutil.net_io_counters(pernic=True)[interface]
             tot = (counter.bytes_sent, counter.bytes_recv)
@@ -50,7 +50,7 @@ class MyApp(Gtk.Application):
         # Create the ul/dl thread and a deque of length 1 to hold the ul/dl- values
         transfer_rate = deque(maxlen=1)
 
-        worker_thread = threading.Thread(target=calculate_network_speed, args=(transfer_rate, self.indicator))
+        worker_thread = threading.Thread(target=calculate_net_speed, args=(transfer_rate, self.indicator))
 
         # # The program will exit if there are only daemonic threads left.
         worker_thread.daemon = True
