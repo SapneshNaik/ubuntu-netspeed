@@ -36,22 +36,38 @@ class UbuntuNetSpeed(Gtk.Application):
 
         def calculate_net_speed(rate, indicator, dt = 2, interface = Interfaces.get_default()):
             t0 = time.time()
+
+
+            #loop untill we have a default (enabled) interface
+            while interface is None:
+                interface = Interfaces.get_default()
+
             counter = psutil.net_io_counters(pernic=True)[interface]
             tot = (counter.bytes_sent, counter.bytes_recv)
 
             while True:
                 last_tot = tot
                 time.sleep(dt)
+
+                #cover an edge case
+                while interface is None:
+                    interface = Interfaces.get_default()
+
                 counter = psutil.net_io_counters(pernic=True)[interface]
                 t1 = time.time()
                 tot = (counter.bytes_sent, counter.bytes_recv)
                 ul, dl = [(now - last) / (t1 - t0)
-                          for now, last in zip(tot, last_tot)]
+                            for now, last in zip(tot, last_tot)]
 
                 rate.append((ul, dl))
                 # print(auto_units(dl))
                 update_speed(indicator)
                 t0 = time.time()
+                rate.append((ul, dl))
+                # print(auto_units(dl))
+                update_speed(indicator)
+                t0 = time.time()
+
 
 
 
@@ -61,7 +77,7 @@ class UbuntuNetSpeed(Gtk.Application):
                     if unit != 'B/s' and not self.BYTE_THRESHHOLD: 
                         return "%3.1f %s" % (num, unit)
                     else:
-                        return "0.0 B/s" 
+                        return "0.0 KiB/s" 
 
                 num /= 1024.0
             return "%.1f %s" % (num, 'Yi')
@@ -69,8 +85,12 @@ class UbuntuNetSpeed(Gtk.Application):
         def update_speed(indicator):
                 download_speed = auto_units(transfer_rate[0][1])
                 upload_speed = auto_units(transfer_rate[0][0])
-                label = self.UPLOAD_SYMBOL + upload_speed + " " + self.DOWNLOAD_SYMBOL + download_speed
-                indicator.indicator.set_label( label, self.INDICATOR_LABEL_GUIDE)
+                label = self.DOWNLOAD_SYMBOL + download_speed + " " + self.UPLOAD_SYMBOL + upload_speed
+
+                try:
+                    indicator.indicator.set_label( label, self.INDICATOR_LABEL_GUIDE)
+                except:
+                    indicator.indicator.set_label( label, self.INDICATOR_LABEL_GUIDE)
 
 
         # Create the ul/dl thread and a deque of length 1 to hold the ul/dl- values
