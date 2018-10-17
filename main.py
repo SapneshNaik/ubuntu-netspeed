@@ -16,8 +16,14 @@ import signal
 from Gtk_indicator import Appindicator
 from Gtk_indicator import AppConfigWindow
 from Gtk_indicator import AppMainWindow
+from interfaces import Interfaces
 
 class UbuntuNetSpeed(Gtk.Application):
+
+    UPLOAD_SYMBOL = "\u2191"
+    DOWNLOAD_SYMBOL = "\u2193"
+    INDICATOR_LABEL_GUIDE = "00:00"
+
     def __init__(self, app_name):
         self.name = app_name
         self.main_window = AppMainWindow(self)
@@ -27,8 +33,7 @@ class UbuntuNetSpeed(Gtk.Application):
 
     def run(self):
 
-        #TO-DO: Provide support for dynamic interface change 
-        def calculate_net_speed(rate, indicator, dt=1, interface='enp3s0'):
+        def calculate_net_speed(rate, indicator, dt = 1, interface = Interfaces.get_default()):
             t0 = time.time()
             counter = psutil.net_io_counters(pernic=True)[interface]
             tot = (counter.bytes_sent, counter.bytes_recv)
@@ -43,8 +48,13 @@ class UbuntuNetSpeed(Gtk.Application):
                           for now, last in zip(tot, last_tot)]
                 # print(ul, dl)
                 rate.append((ul, dl))
-                indicator.indicator.set_label("UL: {0:.0f} kB/s | DL: {1:.0f} kB/s".format(*transfer_rate[-1]), "80% thrust")
+                update_speed(indicator)
                 t0 = time.time()
+
+        def update_speed(indicator):
+
+                label = self.UPLOAD_SYMBOL + "{0:.0f} kB/s  " + self.DOWNLOAD_SYMBOL + "{1:.0f} kB/s"
+                indicator.indicator.set_label( label.format(*transfer_rate[-1]), self.INDICATOR_LABEL_GUIDE)
 
 
         # Create the ul/dl thread and a deque of length 1 to hold the ul/dl- values
