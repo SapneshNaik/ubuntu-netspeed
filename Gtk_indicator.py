@@ -8,6 +8,11 @@ from gi.repository import AppIndicator3 as appindicator
 
 
 class Appindicator:
+
+    INDICATOR_LABEL_GUIDE = "00:00"
+
+    DEFAULT_LABEL = "Sapnesh Naik"
+
     def __init__(self, root):
         self.app = root
         self.indicator = appindicator.Indicator.new(
@@ -16,16 +21,25 @@ class Appindicator:
                     appindicator.IndicatorCategory.APPLICATION_STATUS)
 
         self.indicator.set_status (appindicator.IndicatorStatus.ACTIVE)
-        self.indicator.set_label("Sapnesh Naik", "80% thrust")
+        self.indicator.set_label(self.DEFAULT_LABEL, self.INDICATOR_LABEL_GUIDE )
     
         self.menu = Gtk.Menu()
-        item = Gtk.MenuItem()
-        item.set_label("Main Window")
-        item.connect("activate", self.app.main_window.cb_show, '')
-        self.menu.append(item)
 
         item = Gtk.MenuItem()
-        item.set_label("Configuration")
+        item.set_label("Units")
+        self.menu.append(item)
+
+        #Sub menu Not working.
+        #submenu for different units
+        self.sub_menu = Gtk.Menu()
+        submenu_item = Gtk.MenuItem()
+        submenu_item.set_label("Kilo Bytes (kB)")
+        item.set_submenu(self.sub_menu)
+
+
+
+        item = Gtk.MenuItem()
+        item.set_label("Interfaces")
         item.connect("activate", self.app.config_window.cb_show, '')
         self.menu.append(item)
 
