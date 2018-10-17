@@ -23,6 +23,7 @@ class UbuntuNetSpeed(Gtk.Application):
     UPLOAD_SYMBOL = "\u2191"
     DOWNLOAD_SYMBOL = "\u2193"
     INDICATOR_LABEL_GUIDE = "00:00"
+    BYTE_THRESHHOLD = False
 
     def __init__(self, app_name):
         self.name = app_name
@@ -33,7 +34,7 @@ class UbuntuNetSpeed(Gtk.Application):
 
     def run(self):
 
-        def calculate_net_speed(rate, indicator, dt = 1, interface = Interfaces.get_default()):
+        def calculate_net_speed(rate, indicator, dt = 2, interface = Interfaces.get_default()):
             t0 = time.time()
             counter = psutil.net_io_counters(pernic=True)[interface]
             tot = (counter.bytes_sent, counter.bytes_recv)
@@ -44,17 +45,32 @@ class UbuntuNetSpeed(Gtk.Application):
                 counter = psutil.net_io_counters(pernic=True)[interface]
                 t1 = time.time()
                 tot = (counter.bytes_sent, counter.bytes_recv)
-                ul, dl = [(now - last) / (t1 - t0) / 1000.0
+                ul, dl = [(now - last) / (t1 - t0)
                           for now, last in zip(tot, last_tot)]
-                # print(ul, dl)
+
                 rate.append((ul, dl))
+                # print(auto_units(dl))
                 update_speed(indicator)
                 t0 = time.time()
 
-        def update_speed(indicator):
 
-                label = self.UPLOAD_SYMBOL + "{0:.0f} kB/s  " + self.DOWNLOAD_SYMBOL + "{1:.0f} kB/s"
-                indicator.indicator.set_label( label.format(*transfer_rate[-1]), self.INDICATOR_LABEL_GUIDE)
+
+        def auto_units(num):
+            for unit in ['B/s','KiB/s','MiB/s','GiB/s','TiB/s','PiB/s','EiB/s','ZiB/s']:
+                if (abs(num) < 1024.0):
+                    if unit != 'B/s' and not self.BYTE_THRESHHOLD: 
+                        return "%3.1f %s" % (num, unit)
+                    else:
+                        return "0.0 B/s" 
+
+                num /= 1024.0
+            return "%.1f %s" % (num, 'Yi')
+
+        def update_speed(indicator):
+                download_speed = auto_units(transfer_rate[0][1])
+                upload_speed = auto_units(transfer_rate[0][0])
+                label = self.UPLOAD_SYMBOL + upload_speed + " " + self.DOWNLOAD_SYMBOL + download_speed
+                indicator.indicator.set_label( label, self.INDICATOR_LABEL_GUIDE)
 
 
         # Create the ul/dl thread and a deque of length 1 to hold the ul/dl- values
