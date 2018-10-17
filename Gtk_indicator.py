@@ -11,7 +11,7 @@ class Appindicator:
 
     INDICATOR_LABEL_GUIDE = "00:00"
 
-    DEFAULT_LABEL = "Sapnesh Naik"
+    DEFAULT_LABEL = "\u2193"+ b" 0.0 KiB/s ".decode("utf-8") + "\u2191" + b"0.0 KiB/s".decode("utf-8")
 
     def __init__(self, root):
         self.app = root
@@ -26,14 +26,15 @@ class Appindicator:
         self.menu = Gtk.Menu()
 
         item = Gtk.MenuItem()
-        item.set_label("Units")
+        item.set_label("Settings")
         self.menu.append(item)
 
         #Sub menu Not working.
         #submenu for different units
         self.sub_menu = Gtk.Menu()
         submenu_item = Gtk.MenuItem()
-        submenu_item.set_label("Kilo Bytes (kB)")
+        submenu_item.set_label("Units")
+        self.sub_menu.append(submenu_item)
         item.set_submenu(self.sub_menu)
 
 
