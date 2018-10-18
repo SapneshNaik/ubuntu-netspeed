@@ -5,7 +5,9 @@ gi.require_version('AppIndicator3', '0.1')
 
 from gi.repository import Gtk
 from gi.repository import AppIndicator3 as appindicator
+from interfaces import Interfaces
 
+# this module needs refactoring, UI code with logic is confusing. I haven't a idea as to how to structure it as of now.
 
 class Appindicator:
 
@@ -23,34 +25,50 @@ class Appindicator:
         self.indicator.set_status (appindicator.IndicatorStatus.ACTIVE)
         self.indicator.set_label(self.DEFAULT_LABEL, self.INDICATOR_LABEL_GUIDE )
     
-        self.menu = Gtk.Menu()
+        self.main_menu = Gtk.Menu()
 
-        item = Gtk.MenuItem()
-        item.set_label("Settings")
-        self.menu.append(item)
+        main_menu_item = Gtk.MenuItem()
+        main_menu_item.set_label("Settings")
+        self.main_menu.append(main_menu_item)
 
-        #Sub menu Not working.
-        #submenu for different units
-        self.sub_menu = Gtk.Menu()
-        submenu_item = Gtk.MenuItem()
-        submenu_item.set_label("Units")
-        self.sub_menu.append(submenu_item)
-        item.set_submenu(self.sub_menu)
+        #settings sub menu
+        settings_submenu = Gtk.Menu()
+
+        interfaces = Gtk.MenuItem()
+        interfaces.set_label("Interfaces")
+        settings_submenu.append(interfaces)
+
+  
+
+        available_interfaces = Interfaces.get_interfaces()
+
+        interfaces_submenu = Gtk.Menu()
+        
+        for i in available_interfaces:
+            if i not in "lo":
+                interfaces_submenu_item = Gtk.MenuItem()
+                interfaces_submenu_item.set_label(i)
+                interfaces_submenu.append(interfaces_submenu_item)
+
+        interfaces.set_submenu(interfaces_submenu)
+
+        settings_submenu_item = Gtk.MenuItem()
+        settings_submenu_item.set_label("Units")
+        settings_submenu.append(settings_submenu_item)
+
+        main_menu_item.set_submenu(settings_submenu)
 
 
+        main_menu_item = Gtk.MenuItem()
+        main_menu_item.set_label("Exit")
+        main_menu_item.connect("activate", self.cb_exit, '')
+        self.main_menu.append(main_menu_item)
 
-        item = Gtk.MenuItem()
-        item.set_label("Interfaces")
-        item.connect("activate", self.app.config_window.cb_show, '')
-        self.menu.append(item)
+        #show menu items
+        self.main_menu.show_all()
 
-        item = Gtk.MenuItem()
-        item.set_label("Exit")
-        item.connect("activate", self.cb_exit, '')
-        self.menu.append(item)
-
-        self.menu.show_all()
-        self.indicator.set_menu(self.menu)
+        #set menu to indicator
+        self.indicator.set_menu(self.main_menu)
 
     def cb_exit(self, w, data):
         Gtk.main_quit()
