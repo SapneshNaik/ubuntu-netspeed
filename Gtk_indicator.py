@@ -1,3 +1,7 @@
+''' This module defines the idicator for the application and initates the
+    application's menus.
+'''
+
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -7,12 +11,11 @@ from gi.repository import Gtk
 from gi.repository import AppIndicator3 as appindicator
 from interfaces import Interfaces
 
-# this module needs refactoring, UI code with logic is confusing. I haven't a idea as to how to structure it as of now.
-
 class Appindicator:
 
     INDICATOR_LABEL_GUIDE = "00:00"
 
+    #The app takes approximately 2 seconds to start displaying the network speed. Until then show a default string
     DEFAULT_LABEL = "\u2193"+ b" 0.0 KiB/s ".decode("utf-8") + "\u2191" + b"0.0 KiB/s".decode("utf-8")
 
     def __init__(self, root):
