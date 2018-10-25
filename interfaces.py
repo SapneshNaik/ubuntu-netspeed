@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
-#Get network interface related information.
+''' This module provides interface related information such as the default
+	interface and all the interfaces available to the system.
+'''
+
+
 import netifaces
 
 
