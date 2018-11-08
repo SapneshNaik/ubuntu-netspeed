@@ -34,8 +34,15 @@ class UbuntuNetSpeed(Gtk.Application):
     def run(self):
 
         ''' 
-            This function calculate the Tx and Ux bytes every 2 seconds. The application listens on the default 
+            This function calculates the Tx (Download) and Ux (Upload) bytes every 2 seconds. The application listens on the default 
             interface by default.
+            Logic: 
+               1 - get the Tx and Ux Bytes and the current timestamp [Tx1, Ux1, t1].
+               2 - sleep for n seconds.
+               3 - get the Tx and Ux Bytes again and the current timestamp [Tx2, Ux2, t2].
+               4 - Calculate the network speed using the formula:
+                    TxSpeed = (Tx2-Tx1)/ (t2-t1)
+                    UxSpeed = (Ux2-Ux1)/ (t2-t1)
         '''
         
         def calculate_net_speed(rate, indicator, dt = 2, interface = Interfaces.get_default()):
@@ -70,7 +77,7 @@ class UbuntuNetSpeed(Gtk.Application):
 
         ''' 
             Automatically format the Tx and Ux bytes to approptiate Unit.
-            We also ignore bytes below 1024 preventing unnecessory UI updates 
+            We also ignore bytes below 1024 to prevent unnecessory UI updates 
         '''
         def auto_units(num):
             for unit in ['B/s','KiB/s','MiB/s','GiB/s','TiB/s','PiB/s','EiB/s','ZiB/s']:
@@ -85,7 +92,8 @@ class UbuntuNetSpeed(Gtk.Application):
 
 
         ''' 
-            Update the indicator text with the current Upload and Doownload Speed
+            Update the indicator text with the current Upload and Doownload Speed.
+            This method constructs the dl,ul speed string and writes it to the app indicator label.
         '''
         def update_speed(indicator):
                 download_speed = auto_units(transfer_rate[0][1])
@@ -96,16 +104,17 @@ class UbuntuNetSpeed(Gtk.Application):
 
 
 
-        # Create the ul/dl thread and a deque of length 1 to hold the ul/dl- values
+        # deque of length 1 to hold the ul/dl- values
         transfer_rate = deque(maxlen=1)
 
+        # Create a new thread for the network speed calculation which avoilds too much work on the main thread
         worker_thread = threading.Thread(target=calculate_net_speed, args=(transfer_rate, self.indicator))
 
         # # The program will exit if there are only daemonic threads left.
         worker_thread.daemon = True
         worker_thread.start()
 
-        #Gracefully handle CTRL+C interrupt
+        #Gracefully handle [CTRL+C] interrupt
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, quit)
 
         Gtk.main()
